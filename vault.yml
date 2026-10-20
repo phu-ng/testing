@@ -1,0 +1,31 @@
+- name: Create Vault audit log directory
+  ansible.builtin.file:
+    path: /var/log/vault
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0755"
+  become: true
+
+- name: Configure Vault audit log rotation
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/vault
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      /var/log/vault/audit.json {
+          rotate 3
+          daily
+          compress
+          delaycompress
+          missingok
+          notifempty
+          extension json
+          dateext
+          dateformat %Y-%m-%d.
+          postrotate
+              /bin/systemctl reload vault || true
+          endscript
+      }
+  become: true
